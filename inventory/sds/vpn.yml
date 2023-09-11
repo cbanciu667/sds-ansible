@@ -1,0 +1,7 @@
+vpn:
+  hosts:
+    vpnsrv:
+      ansible_connection: ssh
+      ansible_user: "{{ platform_username }}"
+      ansible_host: "{{ vpnsrv_ip }}"
+      ansible_ssh_common_args: '-o StrictHostKeyChecking=no'

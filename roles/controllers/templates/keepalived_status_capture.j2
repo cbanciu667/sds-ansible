@@ -1,0 +1,4 @@
+!/bin/bash
+
+echo "$(date): The loadbalancer instance running on $(hostname) is currently marker $1" |tee /tmp/load-balancer-status
+chmod 755 /tmp/load-balancer-status || true

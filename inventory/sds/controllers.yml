@@ -1,0 +1,12 @@
+controllers:
+  hosts:
+    controller:
+      ansible_connection: ssh
+      ansible_user: "{{ platform_username }}"
+      ansible_host: "{{ controller_ip }}"
+      ansible_ssh_common_args: '-o StrictHostKeyChecking=no'
+    controller-bkp:
+      ansible_connection: ssh
+      ansible_user: "{{ platform_username }}"
+      ansible_host: "{{ controller_bkp_ip }}"
+      ansible_ssh_common_args: '-o StrictHostKeyChecking=no'

@@ -1,0 +1,59 @@
+server {
+       listen 80;
+       server_name {{ platform_name }}-vault.{{ domain_name }};
+
+       listen [::]:80;
+       return 301 https://$host$request_uri;
+}
+
+server {
+        listen *:443 ssl;
+        http2 on;
+
+        server_name {{ platform_name }}-vault.{{ domain_name }};
+
+        access_log /var/log/{{ platform_name }}-vault.{{ domain_name }}.access.log;
+        error_log /var/log/{{ platform_name }}-vault.{{ domain_name }}.error.log;
+
+        include /etc/nginx/conf.d/domain-certificate.conf;
+        include /etc/nginx/conf.d/ssl-params.conf;
+
+        location / {
+                include /etc/nginx/conf.d/proxy-params.conf;
+                include /etc/nginx/conf.d/access-rules.conf;
+                proxy_pass http://{{ platform_name }}-controller.{{ domain_name }}:8200/;
+        }
+}
+
+server {
+       listen 80;
+       server_name {{ platform_name }}-docker.{{ domain_name }};
+
+       listen [::]:80;
+       return 301 https://$host$request_uri;
+}
+
+server {
+        listen *:443 ssl;
+        http2 on;
+
+        server_name {{ platform_name }}-docker.{{ domain_name }};
+
+        access_log /var/log/{{ platform_name }}-docker.{{ domain_name }}.access.log;
+        error_log /var/log/{{ platform_name }}-docker.{{ domain_name }}.error.log;
+
+        include /etc/nginx/conf.d/domain-certificate.conf;
+        include /etc/nginx/conf.d/ssl-params.conf;
+
+        location / {
+                include /etc/nginx/conf.d/access-rules.conf;
+		proxy_cache docker;
+                proxy_cache_background_update on;
+                proxy_cache_lock on;
+     		proxy_set_header Host $host:$server_port;
+     		proxy_set_header X-Real-IP $remote_addr;
+     		proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+     		proxy_set_header X-Forwarded-Proto "https";
+                proxy_pass http://{{ platform_name }}-controller.{{ domain_name }}:5000/;
+        }
+}

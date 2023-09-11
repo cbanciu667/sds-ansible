@@ -1,0 +1,7 @@
+---
+- include_tasks: nodes.yml
+  when:
+    - ansible_facts['os_family'] == 'Debian'
+    - ansible_facts['distribution'] == 'Ubuntu'
+    - ansible_facts['distribution_release'] == 'jammy'
+  

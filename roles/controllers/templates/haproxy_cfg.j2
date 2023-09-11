@@ -1,0 +1,22 @@
+#jinja2: trim_blocks:False
+defaults
+  mode tcp
+  timeout connect 10s
+  timeout client 30s
+  timeout server 30s
+
+frontend apiserver
+  bind *:8443
+  mode tcp
+  option tcplog
+  log 127.0.0.1 local0
+  default_backend apiserver
+
+backend apiserver
+  option httpchk GET /healthz
+  http-check expect status 200
+  mode tcp
+  option ssl-hello-chk
+  balance     roundrobin
+  server {{ platform_name }}-cp1 {{ cp1_ip }}:6443 check
+  server {{ platform_name }}-cp2 {{ cp2_ip }}:6443 check

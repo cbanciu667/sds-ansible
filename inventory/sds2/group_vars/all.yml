@@ -1,0 +1,9 @@
+domain_name: 'soliddistributedsystems.com'
+platform_dns_hosting: route53
+platform_username: platform_user
+platform_on_prem: false
+platform_name: sds2
+timezone: 'Europe/Bucharest'
+locale: 'C.UTF-8'
+controller_ip: 192.168.100.0
+controller_bkp_ip: 192.168.100.0

@@ -1,0 +1,34 @@
+---
+- hosts: all
+  become: yes
+  gather_facts: yes
+  become_method: sudo
+  roles:
+    - base
+  handlers:
+    - name: restart sshd
+      service: name=sshd state=restarted
+
+- hosts: controllers
+  become: yes
+  gather_facts: yes
+  become_method: sudo
+  roles:
+    - controllers
+
+- hosts: nodes
+  become: yes
+  gather_facts: yes
+  become_method: sudo
+  roles:
+    - nodes
+
+- hosts: vpn
+  become: yes
+  gather_facts: yes
+  become_method: sudo
+  roles:
+    - base
+  handlers:
+    - name: restart sshd
+      service: name=sshd state=restarted

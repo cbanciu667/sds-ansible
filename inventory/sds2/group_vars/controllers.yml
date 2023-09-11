@@ -1,0 +1,2 @@
+aws_cli_output_format: json
+aws_cli_region: 'eu-central-1'

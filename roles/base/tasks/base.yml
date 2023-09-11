@@ -1,0 +1,126 @@
+---
+- name: Apt update
+  apt:
+    update_cache: yes
+
+- name: Update dist to the latest version
+  apt:
+    upgrade: full
+    force_apt_get: True
+
+- name: Install base packages
+  apt:
+    name: "{{ packages }}"
+    state: present
+    force_apt_get: True    
+  vars:
+    packages:
+    - software-properties-common
+    - apt-transport-https
+    - ca-certificates
+    - net-tools
+    - dnsutils
+    - nfs-common
+    - logrotate
+    - python3
+    - python3-pip
+
+- name: Remove ufw
+  apt:
+    pkg: ufw
+    state: absent
+
+- name: Create User
+  user:
+    name: "{{ platform_username }}"
+    shell: /bin/bash
+    group: sudo
+
+- name: Create users groups
+  group:
+    name: "{{ platform_username }}"
+    state: present
+
+- name: Set home directories for the users
+  set_fact:
+    home_dir: "/home/{{ platform_username }}"
+
+- name: Set authorized key took from file
+  authorized_key:
+    user: "{{ platform_username }}"
+    state: present
+    key: "{{ lookup('file', '../files/{{platform_username}}.pub') }}"
+    exclusive: yes
+
+- name: Allow user to have passwordless sudo
+  lineinfile:
+    dest: /etc/sudoers
+    state: present
+    regexp: '^{{platform_username}}'
+    line: '{{platform_username}} ALL=(ALL:ALL) NOPASSWD: ALL'
+
+- name: Disallow root SSH access
+  lineinfile: dest=/etc/ssh/sshd_config
+              regexp="^PermitRootLogin"
+              line="PermitRootLogin no"
+              state=present
+  notify:
+    - restart sshd
+
+- name: Change the hostname to our standard
+  hostname: 
+    name: "{{ platform_name }}-{{ inventory_hostname }}"
+    use: debian
+  when: not inventory_hostname in ansible_fqdn
+
+- name: Change the hostname to our standard - second method
+  command: hostnamectl set-hostname {{ platform_name }}-{{ inventory_hostname }}
+  when: not inventory_hostname in ansible_fqdn
+
+- name: Fix /etc/hosts removing the old hostname
+  lineinfile:
+    state=present
+    dest=/etc/hosts
+    line="{{ ansible_default_ipv4.address }} {{ platform_name }}-{{ inventory_hostname }} {{ platform_name }}-{{ inventory_hostname }}.{{ domain_name }}"
+    regexp="^{{ ansible_default_ipv4.address }}"
+  when: not inventory_hostname in ansible_fqdn
+  tags:
+    - hosts
+
+- name: Fix /etc/cloud/cloud.cfg
+  lineinfile:
+    path: /etc/cloud/cloud.cfg
+    regexp: '^preserve_hostname: '
+    line: "preserve_hostname: true"
+  tags:
+    - hosts    
+
+- name: Set timezone
+  timezone:
+    name: "{{ timezone }}"
+
+- name: get locale
+  shell: |
+    set -o pipefail \
+    locale | grep ^LANG | cut -d= -f2
+  register: linux_locale
+  changed_when: False
+  check_mode: no
+
+- name: set locale
+  command: update-locale LANG={{ locale }}
+  when: linux_locale != locale
+
+- name: Remove useless packages from the cache
+  apt:
+    autoclean: yes
+
+- name: Remove dependencies that are no longer required
+  apt:
+    autoremove: yes  
+
+- name: Motd
+  copy:
+    src: motd
+    dest: /etc/motd
+    mode: 0666
