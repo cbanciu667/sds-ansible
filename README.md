@@ -1,5 +1,6 @@
-**SDS Ansible code for Ubuntu Server LTS configuration**   
+# SDS Ansible code
 
+Notes: 
 Used for the initial sds platform hosts configuration depending on hosting.   
 Works only with Ubuntu Server 22.04 LTS or equivalent.   
 
