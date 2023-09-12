@@ -692,7 +692,7 @@
     line: "kube_version: {{ kubespray_k8s_version }}"
     backrefs: yes
   when:
-    - platform_on_prem == true    
+    - platform_on_prem == true
 
 - name: Kubespray cluster name
   ansible.builtin.lineinfile:
@@ -701,7 +701,7 @@
     line: "cluster_name: {{ platform_name }}.local"
     backrefs: yes
   when:
-    - platform_on_prem == true    
+    - platform_on_prem == true
 
 - name: Kubespray k8s audit
   ansible.builtin.lineinfile:
@@ -710,7 +710,7 @@
     line: "kubernetes_audit: true"
     backrefs: yes
   when:
-    - platform_on_prem == true    
+    - platform_on_prem == true
 
 - name: Kubespray k8s secret encryption
   ansible.builtin.lineinfile:
@@ -719,7 +719,7 @@
     line: "kube_encrypt_secret_data: true"
     backrefs: yes
   when:
-    - platform_on_prem == true    
+    - platform_on_prem == true
 
 - name: Kubespray k8s local kubeconfig
   ansible.builtin.lineinfile:
@@ -728,7 +728,7 @@
     line: "kubeconfig_localhost: true"
     backrefs: yes
   when:
-    - platform_on_prem == true    
+    - platform_on_prem == true
 
 - name: Kubespray k8s local kubectl
   ansible.builtin.lineinfile:
@@ -737,7 +737,7 @@
     line: "kubectl_localhost: true"
     backrefs: yes
   when:
-    - platform_on_prem == true    
+    - platform_on_prem == true
 
 - name: Kubespray k8s strict proxy arp
   ansible.builtin.lineinfile:
@@ -746,7 +746,7 @@
     line: "kube_proxy_strict_arp: true"
     backrefs: yes
   when:
-    - platform_on_prem == true    
+    - platform_on_prem == true
 
 - name: Kubespray k8s key IP addresses
   ansible.builtin.lineinfile:
@@ -755,7 +755,7 @@
     line: "supplementary_addresses_in_ssl_keys: [10.0.0.1, 10.0.0.2, 10.0.0.3, {{ k8s_virtual_ip }}, {{ cp1_ip }}, {{ cp2_ip }}]"
     backrefs: yes
   when:
-    - platform_on_prem == true    
+    - platform_on_prem == true
 
 - name: Kubespray load balancer IP
   replace:
@@ -766,7 +766,7 @@
         address: {{ k8s_virtual_ip }}
         port: 8443
   when:
-    - platform_on_prem == true        
+    - platform_on_prem == true
 
 - name: Kubespray k8s helm enabled
   ansible.builtin.lineinfile:
@@ -775,19 +775,7 @@
     line: "helm_enabled: true"
     backrefs: yes
   when:
-    - platform_on_prem == true    
-
-- name: Kubespray K8s docker registry
-  replace:
-    path: "/home/{{ platform_username }}/kubespray/inventory/{{ platform_name }}/group_vars/k8s_cluster/addons.yml"
-    regexp: '(registry_enabled:[\s\S]*)# registry_disk_size: \"10Gi\"'
-    replace: |-
-      registry_enabled: false
-      registry_namespace: kube-system
-      registry_storage_class: ""
-      registry_disk_size: "20Gi"
-  when:
-    - platform_on_prem == true      
+    - platform_on_prem == true
 
 - name: Kubespray K8s Metrics server
   replace:
@@ -802,140 +790,4 @@
       metrics_server_host_network: false
       metrics_server_replicas: 1
   when:
-    - platform_on_prem == true      
-
-- name: Kubespray K8s Nginx Ingress configuration
-  replace:
-    path: "/home/{{ platform_username }}/kubespray/inventory/{{ platform_name }}/group_vars/k8s_cluster/addons.yml"
-    regexp: '(ingress_nginx_enabled:[\s\S]*)ingress_nginx_default: false'
-    replace: |-
-      ingress_nginx_enabled: true
-      ingress_nginx_host_network: true
-      ingress_publish_status_address: ""
-      ingress_nginx_nodeselector:
-        kubernetes.io/os: "linux"
-      ingress_nginx_tolerations:
-        - key: "node-role.kubernetes.io/master"
-          operator: "Equal"
-          value: ""
-          effect: "NoSchedule"
-        - key: "node-role.kubernetes.io/control-plane"
-          operator: "Equal"
-          value: ""
-          effect: "NoSchedule"
-      ingress_nginx_namespace: "ingress-nginx"
-      ingress_nginx_insecure_port: 80
-      ingress_nginx_secure_port: 443
-      ingress_nginx_configmap:
-        map-hash-bucket-size: "256"
-        ssl-protocols: "TLSv1.3"
-      # ingress_nginx_configmap_tcp_services:
-      #   9000: "default/example-go:8080"
-      # ingress_nginx_configmap_udp_services:
-      #   53: "kube-system/coredns:53"
-      # ingress_nginx_extra_args:
-      #   - --default-ssl-certificate=default/foo-tls
-      # ingress_nginx_termination_grace_period_seconds: 300
-      ingress_nginx_class: nginx
-      # ingress_nginx_without_class: true
-      # ingress_nginx_default: false
-  when:
-    - platform_on_prem == true      
-
-- name: Kubespray K8s certmanager configuration
-  replace:
-    path: "/home/{{ platform_username }}/kubespray/inventory/{{ platform_name }}/group_vars/k8s_cluster/addons.yml"
-    regexp: '(cert_manager_enabled:[\s\S]*)cert_manager_leader_election_namespace: kube-system'
-    replace: |-
-      cert_manager_enabled: true
-      cert_manager_namespace: "cert-manager"
-      cert_manager_tolerations:
-        - key: node-role.kubernetes.io/master
-          effect: NoSchedule
-        - key: node-role.kubernetes.io/control-plane
-          effect: NoSchedule
-      # cert_manager_affinity:
-      #  nodeAffinity:
-      #    preferredDuringSchedulingIgnoredDuringExecution:
-      #    - weight: 100
-      #      preference:
-      #        matchExpressions:
-      #        - key: node-role.kubernetes.io/control-plane
-      #          operator: In
-      #          values:
-      #          - ""
-      # cert_manager_nodeselector:
-      #   kubernetes.io/os: "linux"
-
-      # cert_manager_trusted_internal_ca: |
-      #   -----BEGIN CERTIFICATE-----
-      #   [REPLACE with your CA certificate]
-      #   -----END CERTIFICATE-----
-      # cert_manager_leader_election_namespace: kube-system
-  when:
-    - platform_on_prem == true      
-
-- name: Kubespray Metallb configuration
-  replace:
-    path: "/home/{{ platform_username }}/kubespray/inventory/{{ platform_name }}/group_vars/k8s_cluster/addons.yml"
-    regexp: '(metallb_enabled:[\s\S]*)#   layer3:'
-    replace: |-
-      metallb_enabled: true
-      metallb_speaker_enabled: true
-      metallb_speaker_nodeselector:
-        kubernetes.io/os: "linux"
-      metallb_controller_nodeselector:
-        kubernetes.io/os: "linux"
-      metallb_speaker_tolerations:
-        - key: "node-role.kubernetes.io/master"
-          operator: "Equal"
-          value: ""
-          effect: "NoSchedule"
-        - key: "node-role.kubernetes.io/control-plane"
-          operator: "Equal"
-          value: ""
-          effect: "NoSchedule"
-      metallb_controller_tolerations:
-        - key: "node-role.kubernetes.io/master"
-          operator: "Equal"
-          value: ""
-          effect: "NoSchedule"
-        - key: "node-role.kubernetes.io/control-plane"
-          operator: "Equal"
-          value: ""
-          effect: "NoSchedule"
-      metallb_version: v0.13.10
-      metallb_protocol: "layer2"
-      metallb_port: "7472"
-      metallb_memberlist_port: "7946"
-      metallb_config:
-        address_pools:
-          primary:
-           ip_range:
-            - {{ metallb_ip_range }}
-           auto_assign: true
-        layer2:
-          - primary
-  when:
-    - platform_on_prem == true          
-
-- name: Kubespray ArgoCD configuration
-  replace:
-    path: "/home/{{ platform_username }}/kubespray/inventory/{{ platform_name }}/group_vars/k8s_cluster/addons.yml"
-    regexp: '(argocd_enabled: false[\s\S]*)argocd_admin_password: \"password\"'
-    replace: |-
-      argocd_enabled: true
-      argocd_version: v2.8.0
-      argocd_namespace: argocd
-      # Default password:
-      #   - https://argo-cd.readthedocs.io/en/stable/getting_started/#4-login-using-the-cli
-      #   ---
-      #   The initial password is autogenerated and stored in `argocd-initial-admin-secret` in the argocd namespace defined above.
-      #   Using the argocd CLI the generated password can be automatically be fetched from the current kubectl context with the command:
-      #   argocd admin initial-password -n argocd
-      #   ---
-      # Use the following var to set admin password
-      # argocd_admin_password: "password"
-  when:
     - platform_on_prem == true
-      
