@@ -782,7 +782,7 @@
     path: "/home/{{ platform_username }}/kubespray/inventory/{{ platform_name }}/group_vars/k8s_cluster/addons.yml"
     regexp: '(metrics_server_enabled:[\s\S]*)metrics_server_replicas: 1'
     replace: |-
-      metrics_server_enabled: true
+      metrics_server_enabled: false
       metrics_server_container_port: 10250
       metrics_server_kubelet_insecure_tls: true
       metrics_server_metric_resolution: 15s
